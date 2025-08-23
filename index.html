@@ -1,582 +1,471 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beginner English Lessons</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Beginner → Elementary: 20 уроков</title>
 <style>
-:root {
-  --dark-bg:#1a1b23; --dark-card:#252836; --dark-text:#e6e9ef; --dark-accent1:#4ade80; --dark-accent2:#f87171;
-  --light-bg:#f5f5f7; --light-card:#fff; --light-text:#1a1b23; --light-accent1:#34d399; --light-accent2:#f87171;
-  --radius:12px; --transition:0.3s;
+:root{
+  --dark-bg:#1a1b23; --dark-card:#252836; --dark-text:#e6e9ef; --accent:#34d399; --accent2:#60a5fa;
+  --muted:#0f1220; --radius:14px; --t:.25s;
 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;background:var(--dark-bg);color:var(--dark-text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px}
+h1{font-size:22px}
+main{flex:1;display:flex;flex-direction:column;gap:16px;padding:16px}
 
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;}
-body{background:var(--dark-bg);color:var(--dark-text);min-height:100vh;display:flex;flex-direction:column;transition:background var(--transition),color var(--transition);}
-body.light{background:var(--light-bg);color:var(--light-text);}
-header{padding:20px;display:flex;justify-content:space-between;align-items:center;}
-h1{font-size:24px;}
-button{cursor:pointer;border:none;border-radius:var(--radius);padding:8px 14px;font-weight:600;transition:all var(--transition);}
-button:hover{transform:translateY(-2px);}
-.theme-btn{background:var(--dark-accent1);color:#071a12;}
-body.light .theme-btn{background:var(--light-accent1);color:#fff;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:var(--dark-card);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;transition:transform var(--t), box-shadow var(--t)}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.card.locked{opacity:.55;pointer-events:none}
+.title{font-weight:700}
+.subtitle{opacity:.8;font-size:14px}
+.progress{height:8px;background:var(--muted);border-radius:999px;overflow:hidden}
+.progress .fill{height:100%;width:0%;background:var(--accent);transition:width .3s}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.badge{font-size:12px;opacity:.85}
 
-main{flex:1;display:flex;flex-direction:column;}
+.button{cursor:pointer;border:none;border-radius:12px;padding:10px 14px;background:var(--accent2);color:#fff;font-weight:600;transition:opacity var(--t), transform var(--t)}
+.button:hover{opacity:.9;transform:translateY(-1px)}
 
-section{display:none;flex-direction:column;gap:16px;}
-section.active{display:flex;}
+.section{display:none}
+.section.active{display:block}
 
-.lessons-list{display:flex;flex-direction:column;gap:16px;padding:20px;overflow-x:hidden;}
-.lesson-card{background:var(--dark-card);padding:24px;border-radius:var(--radius);display:flex;flex-direction:column;gap:10px;font-size:20px;position:relative;transition:all var(--transition);}
-.lesson-card.locked{opacity:0.5;pointer-events:none;}
-.lesson-card:hover{transform:translateY(-3px);}
-body.light .lesson-card{background:var(--light-card);}
-.progress-bar{height:8px;border-radius:4px;background:#0f1220;overflow:hidden;margin-top:10px;}
-.progress-bar .fill{height:100%;width:0%;background:var(--dark-accent1);transition:width 0.3s ease;}
-body.light .progress-bar .fill{background:var(--light-accent1);}
+.panel{background:var(--dark-card);border-radius:var(--radius);padding:16px}
+.words{margin:10px 0 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;font-size:15px;opacity:.95}
+.word{padding:8px 10px;background:#1d2030;border-radius:10px}
 
-.card{background:var(--dark-card);padding:24px;border-radius:var(--radius);display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:center;height:70vh;text-align:center;}
-body.light .card{background:var(--light-card);}
+#testWord{font-size:28px;margin-bottom:12px}
+input[type="text"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3a3d52;background:#1d2030;color:#fff;font-size:16px;outline:none}
+.controls{display:flex;gap:10px;margin-top:10px}
+.feedback{margin-top:10px;padding:10px;border-radius:10px;display:none}
+.feedback.correct{background:rgba(52,211,153,.18);color:#34d399}
+.feedback.wrong{background:rgba(248,113,113,.18);color:#f87171}
 
-.card h1 {
-  font-size:48px;
-  margin-bottom:16px;
-}
-
-.card .translation {
-  font-size:28px;
-  font-style:italic;
-  margin-bottom:24px;
-}
-
-#testForm input{padding:10px;border-radius:var(--radius);border:1px solid #444;width:100%;outline:none;font-size:18px;}
-.buttons{display:flex;gap:10px;margin-top:10px;}
-.feedback{padding:10px;border-radius:var(--radius);display:none;}
-.feedback.correct{background:rgba(74,222,128,0.2);color:#16a34a;}
-.feedback.wrong{background:rgba(248,113,113,0.2);color:#b91c1c;}
-#nextWordBtn{margin-top:20px;padding:10px 20px;font-size:18px;}
-@media(max-width:600px){.lesson-card{font-size:18px;padding:16px;}}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.back{opacity:.85}
+hr{border:none;height:1px;background:#34384e;margin:10px 0}
+.small{font-size:13px;opacity:.8}
 </style>
 </head>
 <body>
 <header>
-  <h1>English Beginner Lessons</h1>
-  <button class="theme-btn" id="themeToggle">Сменить тему</button>
+  <h1>English A1: Beginner → Elementary (20 уроков)</h1>
+  <button id="resetBtn" class="button back">Сбросить прогресс</button>
 </header>
+
 <main>
-  <!-- Главная -->
-  <section id="mainPage" class="active">
-    <div class="lessons-list" id="lessonsList"></div>
+  <!-- СПИСОК УРОКОВ -->
+  <section id="mainPage" class="section active">
+    <div id="lessonsGrid" class="grid"></div>
   </section>
 
-  <!-- Теория -->
-  <section id="theoryPage">
-    <div class="card" id="theoryCard">
-      <h1 id="wordText"></h1>
-      <p id="translationText" class="translation"></p>
-      <button id="nextWordBtn">Следующее</button>
+  <!-- УРОК (ТЕОРИЯ) -->
+  <section id="lessonPage" class="section">
+    <div class="panel">
+      <div class="row"><h2 id="lessonTitle"></h2><span class="badge small" id="lessonBadge"></span></div>
+      <hr/>
+      <div id="wordList" class="words"></div>
+      <div class="actions">
+        <button id="startTestBtn" class="button">Пройти тест по теме</button>
+        <button id="backToMain1" class="button back">← Назад к урокам</button>
+      </div>
     </div>
-    <button id="backMainBtn">← На главную</button>
   </section>
 
-  <!-- Тест -->
-  <section id="testPage">
-    <div class="card">
+  <!-- ТЕСТ -->
+  <section id="testPage" class="section">
+    <div class="panel">
+      <div class="row"><h2>Тест</h2><span class="badge small" id="testPos"></span></div>
+      <hr/>
+      <div id="testWord"></div>
       <form id="testForm">
-        <div id="testWord"></div>
-        <input type="text" id="testInput" placeholder="Введите перевод">
-        <div class="buttons">
-          <button type="submit">Проверить</button>
-          <button type="button" id="skipTestBtn">Пропустить</button>
+        <input id="testInput" type="text" autocomplete="off" placeholder="Введите перевод на русский"/>
+        <div class="controls">
+          <button class="button" type="submit">Проверить</button>
+          <button class="button back" type="button" id="skipBtn">Пропустить</button>
         </div>
       </form>
       <div id="testFeedback" class="feedback"></div>
+      <div class="actions" style="margin-top:12px">
+        <button id="stopTestBtn" class="button back" type="button">Завершить и вернуться</button>
+      </div>
     </div>
   </section>
 
-  <!-- Результаты -->
-  <section id="summaryPage">
-    <h2>Результаты</h2>
-    <div>Правильно: <span id="sumCorrect">0</span></div>
-    <div>Ошибки: <span id="sumWrong">0</span></div>
-    <div>Процент: <span id="sumPercent">0%</span></div>
-    <button id="againBtn">Пройти заново</button>
-    <button id="toMainBtn">На главную</button>
+  <!-- РЕЗУЛЬТАТ -->
+  <section id="summaryPage" class="section">
+    <div class="panel">
+      <h2>Результаты темы</h2>
+      <hr/>
+      <p>Правильно: <b id="sumCorrect">0</b></p>
+      <p>Ошибки: <b id="sumWrong">0</b></p>
+      <p>Процент: <b id="sumPercent">0%</b></p>
+      <div class="actions">
+        <button id="againBtn" class="button">Пройти ещё раз</button>
+        <button id="backToMain2" class="button back">← К урокам</button>
+      </div>
+    </div>
   </section>
 </main>
 
 <script>
-const themeToggle=document.getElementById("themeToggle");
-const mainPage=document.getElementById("mainPage");
-const theoryPage=document.getElementById("theoryPage");
-const testPage=document.getElementById("testPage");
-const summaryPage=document.getElementById("summaryPage");
-const lessonsList=document.getElementById("lessonsList");
-const wordText=document.getElementById("wordText");
-const translationText=document.getElementById("translationText");
-const nextWordBtn=document.getElementById("nextWordBtn");
-const backMainBtn=document.getElementById("backMainBtn");
-const testForm=document.getElementById("testForm");
-const testWord=document.getElementById("testWord");
-const testInput=document.getElementById("testInput");
-const testFeedback=document.getElementById("testFeedback");
-const skipTestBtn=document.getElementById("skipTestBtn");
-const sumCorrect=document.getElementById("sumCorrect");
-const sumWrong=document.getElementById("sumWrong");
-const sumPercent=document.getElementById("sumPercent");
-const againBtn=document.getElementById("againBtn");
-const toMainBtn=document.getElementById("toMainBtn");
+// ====== ДАННЫЕ (20 тем от Beginner к Elementary) ======
+let lessons = [
+  { title:"Урок 1: Приветствия и знакомство", words:[
+    {en:"Hello",ru:"привет"}, {en:"Hi",ru:"привет"},
+    {en:"Good morning",ru:"доброе утро"}, {en:"Good afternoon",ru:"добрый день"},
+    {en:"Good evening",ru:"добрый вечер"}, {en:"Good night",ru:"спокойной ночи"},
+    {en:"How are you?",ru:"как дела"}, {en:"I'm fine",ru:"я в порядке"},
+    {en:"What's your name?",ru:"как тебя зовут"}, {en:"My name is...",ru:"меня зовут"},
+    {en:"Nice to meet you",ru:"приятно познакомиться"}, {en:"Goodbye",ru:"до свидания"},
+    {en:"See you",ru:"увидимся"}, {en:"Thank you",ru:"спасибо"},
+    {en:"You're welcome",ru:"пожалуйста"}, {en:"Excuse me",ru:"извините"}, {en:"Sorry",ru:"простите"}
+  ], completed:false, lastPercent:0 },
 
-let lessons=[
-  {
-    title:"Урок 1: Приветствия",
-    words:[
-      {en:"Hello",ru:"Привет"},
-      {en:"Hi",ru:"Привет"},
-      {en:"Good morning",ru:"Доброе утро"},
-      {en:"Good afternoon",ru:"Добрый день"},
-      {en:"Good evening",ru:"Добрый вечер"},
-      {en:"Good night",ru:"Спокойной ночи"},
-      {en:"How are you?",ru:"Как дела?"},
-      {en:"I am fine",ru:"Я в порядке"},
-      {en:"Nice to meet you",ru:"Приятно познакомиться"},
-      {en:"See you",ru:"Увидимся"},
-      {en:"Bye",ru:"Пока"},
-      {en:"Goodbye",ru:"До свидания"},
-      {en:"Welcome",ru:"Добро пожаловать"},
-      {en:"Thank you",ru:"Спасибо"},
-      {en:"You are welcome",ru:"Пожалуйста"},
-      {en:"Excuse me",ru:"Извините"},
-      {en:"Sorry",ru:"Простите"},
-      {en:"Please",ru:"Пожалуйста"},
-      {en:"What's your name?",ru:"Как тебя зовут?"},
-      {en:"My name is...",ru:"Меня зовут..."}
-    ],completed:false
-  },
-  {
-    title:"Урок 2: Семья",
-    words:[
-      {en:"Father",ru:"Отец"},
-      {en:"Mother",ru:"Мать"},
-      {en:"Brother",ru:"Брат"},
-      {en:"Sister",ru:"Сестра"},
-      {en:"Grandfather",ru:"Дедушка"},
-      {en:"Grandmother",ru:"Бабушка"},
-      {en:"Son",ru:"Сын"},
-      {en:"Daughter",ru:"Дочь"},
-      {en:"Uncle",ru:"Дядя"},
-      {en:"Aunt",ru:"Тётя"},
-      {en:"Cousin",ru:"Двоюродный брат/сестра"},
-      {en:"Husband",ru:"Муж"},
-      {en:"Wife",ru:"Жена"},
-      {en:"Baby",ru:"Младенец"},
-      {en:"Child",ru:"Ребёнок"},
-      {en:"Parents",ru:"Родители"},
-      {en:"Family",ru:"Семья"},
-      {en:"Relatives",ru:"Родственники"},
-      {en:"Neighbor",ru:"Сосед"},
-      {en:"Friend",ru:"Друг"}
-    ],completed:false
-  },
-  {
-    title:"Урок 3: Цвета",
-    words:[
-      {en:"Red",ru:"Красный"},
-      {en:"Blue",ru:"Синий"},
-      {en:"Green",ru:"Зелёный"},
-      {en:"Yellow",ru:"Жёлтый"},
-      {en:"Black",ru:"Чёрный"},
-      {en:"White",ru:"Белый"},
-      {en:"Orange",ru:"Оранжевый"},
-      {en:"Pink",ru:"Розовый"},
-      {en:"Purple",ru:"Фиолетовый"},
-      {en:"Brown",ru:"Коричневый"},
-      {en:"Gray",ru:"Серый"},
-      {en:"Light blue",ru:"Голубой"},
-      {en:"Dark green",ru:"Тёмно-зелёный"},
-      {en:"Violet",ru:"Фиолетовый"},
-      {en:"Magenta",ru:"Пурпурный"},
-      {en:"Cyan",ru:"Бирюзовый"},
-      {en:"Turquoise",ru:"Бирюзовый"},
-      {en:"Gold",ru:"Золотой"},
-      {en:"Silver",ru:"Серебряный"},
-      {en:"Beige",ru:"Бежевый"}
-    ],completed:false
-  },
-  // Урок 4: Еда
-  {
-    title:"Урок 4: Еда",
-    words:[
-      {en:"Bread",ru:"Хлеб"},
-      {en:"Milk",ru:"Молоко"},
-      {en:"Cheese",ru:"Сыр"},
-      {en:"Egg",ru:"Яйцо"},
-      {en:"Butter",ru:"Масло"},
-      {en:"Apple",ru:"Яблоко"},
-      {en:"Banana",ru:"Банан"},
-      {en:"Orange",ru:"Апельсин"},
-      {en:"Meat",ru:"Мясо"},
-      {en:"Fish",ru:"Рыба"}
-    ],completed:false
-  },
-  // Урок 5: Числа
-  {
-    title:"Урок 5: Числа",
-    words:[
-      {en:"One",ru:"Один"},
-      {en:"Two",ru:"Два"},
-      {en:"Three",ru:"Три"},
-      {en:"Four",ru:"Четыре"},
-      {en:"Five",ru:"Пять"},
-      {en:"Six",ru:"Шесть"},
-      {en:"Seven",ru:"Семь"},
-      {en:"Eight",ru:"Восемь"},
-      {en:"Nine",ru:"Девять"},
-      {en:"Ten",ru:"Десять"}
-    ],completed:false
-  },
-  // Урок 6: Дни недели
-  {
-    title:"Урок 6: Дни недели",
-    words:[
-      {en:"Monday",ru:"Понедельник"},
-      {en:"Tuesday",ru:"Вторник"},
-      {en:"Wednesday",ru:"Среда"},
-      {en:"Thursday",ru:"Четверг"},
-      {en:"Friday",ru:"Пятница"},
-      {en:"Saturday",ru:"Суббота"},
-      {en:"Sunday",ru:"Воскресенье"}
-    ],completed:false
-  },
-  // Урок 7: Месяцы
-  {
-    title:"Урок 7: Месяцы",
-    words:[
-      {en:"January",ru:"Январь"},
-      {en:"February",ru:"Февраль"},
-      {en:"March",ru:"Март"},
-      {en:"April",ru:"Апрель"},
-      {en:"May",ru:"Май"},
-      {en:"June",ru:"Июнь"},
-      {en:"July",ru:"Июль"},
-      {en:"August",ru:"Август"},
-      {en:"September",ru:"Сентябрь"},
-      {en:"October",ru:"Октябрь"},
-      {en:"November",ru:"Ноябрь"},
-      {en:"December",ru:"Декабрь"}
-    ],completed:false
-  },
-  // Урок 8: Погода
-  {
-    title:"Урок 8: Погода",
-    words:[
-      {en:"Sunny",ru:"Солнечно"},
-      {en:"Cloudy",ru:"Облачно"},
-      {en:"Rainy",ru:"Дождливо"},
-      {en:"Snowy",ru:"Снежно"},
-      {en:"Windy",ru:"Ветрено"},
-      {en:"Hot",ru:"Жарко"},
-      {en:"Cold",ru:"Холодно"}
-    ],completed:false
-  },
-  // Урок 9: Части тела
-  {
-    title:"Урок 9: Части тела",
-    words:[
-      {en:"Head",ru:"Голова"},
-      {en:"Eye",ru:"Глаз"},
-      {en:"Ear",ru:"Ухо"},
-      {en:"Nose",ru:"Нос"},
-      {en:"Mouth",ru:"Рот"},
-      {en:"Hand",ru:"Рука"},
-      {en:"Leg",ru:"Нога"},
-      {en:"Foot",ru:"Стопа"},
-      {en:"Arm",ru:"Предплечье"},
-      {en:"Hair",ru:"Волосы"}
-    ],completed:false
-  },
-  // Урок 10: Одежда
-  {
-    title:"Урок 10: Одежда",
-    words:[
-      {en:"Shirt",ru:"Рубашка"},
-      {en:"Pants",ru:"Брюки"},
-      {en:"Dress",ru:"Платье"},
-      {en:"Skirt",ru:"Юбка"},
-      {en:"Shoes",ru:"Обувь"},
-      {en:"Hat",ru:"Шляпа"},
-      {en:"Coat",ru:"Пальто"},
-      {en:"Jacket",ru:"Куртка"},
-      {en:"Socks",ru:"Носки"},
-      {en:"Gloves",ru:"Перчатки"}
-    ],completed:false
-  },
-  // Урок 11: Транспорт
-  {
-    title:"Урок 11: Транспорт",
-    words:[
-      {en:"Car",ru:"Машина"},
-      {en:"Bus",ru:"Автобус"},
-      {en:"Bicycle",ru:"Велосипед"},
-      {en:"Train",ru:"Поезд"},
-      {en:"Plane",ru:"Самолёт"},
-      {en:"Ship",ru:"Корабль"},
-      {en:"Taxi",ru:"Такси"},
-      {en:"Motorcycle",ru:"Мотоцикл"},
-      {en:"Truck",ru:"Грузовик"},
-      {en:"Subway",ru:"Метро"}
-    ],completed:false
-  },
-  // Урок 12: Дом
-  {
-    title:"Урок 12: Дом",
-    words:[
-      {en:"House",ru:"Дом"},
-      {en:"Room",ru:"Комната"},
-      {en:"Kitchen",ru:"Кухня"},
-      {en:"Bathroom",ru:"Ванная"},
-      {en:"Bedroom",ru:"Спальня"},
-      {en:"Living room",ru:"Гостиная"},
-      {en:"Garden",ru:"Сад"},
-      {en:"Door",ru:"Дверь"},
-      {en:"Window",ru:"Окно"},
-      {en:"Roof",ru:"Крыша"}
-    ],completed:false
-  },
-  // Урок 13: Животные
-  {
-    title:"Урок 13: Животные",
-    words:[
-      {en:"Dog",ru:"Собака"},
-      {en:"Cat",ru:"Кошка"},
-      {en:"Bird",ru:"Птица"},
-      {en:"Cow",ru:"Корова"},
-      {en:"Horse",ru:"Лошадь"},
-      {en:"Sheep",ru:"Овца"},
-      {en:"Pig",ru:"Свинья"},
-      {en:"Rabbit",ru:"Кролик"},
-      {en:"Mouse",ru:"Мышь"},
-      {en:"Fish",ru:"Рыба"}
-    ],completed:false
-  },
-  // Урок 14: Магазины
-  {
-    title:"Урок 14: Магазины",
-    words:[
-      {en:"Supermarket",ru:"Супермаркет"},
-      {en:"Bakery",ru:"Пекарня"},
-      {en:"Pharmacy",ru:"Аптека"},
-      {en:"Clothes shop",ru:"Магазин одежды"},
-      {en:"Bookstore",ru:"Книжный магазин"},
-      {en:"Market",ru:"Рынок"},
-      {en:"Shop",ru:"Магазин"},
-      {en:"Mall",ru:"Торговый центр"},
-      {en:"Cafe",ru:"Кафе"},
-      {en:"Restaurant",ru:"Ресторан"}
-    ],completed:false
-  },
-  // Урок 15: Школа
-  {
-    title:"Урок 15: Школа",
-    words:[
-      {en:"School",ru:"Школа"},
-      {en:"Teacher",ru:"Учитель"},
-      {en:"Student",ru:"Ученик"},
-      {en:"Classroom",ru:"Класс"},
-      {en:"Lesson",ru:"Урок"},
-      {en:"Book",ru:"Книга"},
-      {en:"Pen",ru:"Ручка"},
-      {en:"Notebook",ru:"Тетрадь"},
-      {en:"Desk",ru:"Парта"},
-      {en:"Chair",ru:"Стул"}
-    ],completed:false
-  },
-  // Урок 16: Спорт
-  {
-    title:"Урок 16: Спорт",
-    words:[
-      {en:"Football",ru:"Футбол"},
-      {en:"Basketball",ru:"Баскетбол"},
-      {en:"Tennis",ru:"Теннис"},
-      {en:"Swimming",ru:"Плавание"},
-      {en:"Running",ru:"Бег"},
-      {en:"Cycling",ru:"Велоспорт"},
-      {en:"Skiing",ru:"Лыжи"},
-      {en:"Boxing",ru:"Бокс"},
-      {en:"Gym",ru:"Тренажёрный зал"},
-      {en:"Yoga",ru:"Йога"}
-    ],completed:false
-  },
-  // Урок 17: Хобби
-  {
-    title:"Урок 17: Хобби",
-    words:[
-      {en:"Reading",ru:"Чтение"},
-      {en:"Painting",ru:"Рисование"},
-      {en:"Drawing",ru:"Чертёж"},
-      {en:"Cooking",ru:"Готовка"},
-      {en:"Dancing",ru:"Танцы"},
-      {en:"Singing",ru:"Пение"},
-      {en:"Photography",ru:"Фотография"},
-      {en:"Gardening",ru:"Садоводство"},
-      {en:"Traveling",ru:"Путешествия"},
-      {en:"Writing",ru:"Писательство"}
-    ],completed:false
-  },
-  // Урок 18: Эмоции
-  {
-    title:"Урок 18: Эмоции",
-    words:[
-      {en:"Happy",ru:"Счастливый"},
-      {en:"Sad",ru:"Грустный"},
-      {en:"Angry",ru:"Сердитый"},
-      {en:"Surprised",ru:"Удивлённый"},
-      {en:"Scared",ru:"Испуганный"},
-      {en:"Tired",ru:"Уставший"},
-      {en:"Excited",ru:"Взволнованный"},
-      {en:"Bored",ru:"Скучающий"},
-      {en:"Confused",ru:"Смущённый"},
-      {en:"Nervous",ru:"Нервный"}
-    ],completed:false
-  },
-  // Урок 19: Профессии
-  {
-    title:"Урок 19: Профессии",
-    words:[
-      {en:"Doctor",ru:"Доктор"},
-      {en:"Teacher",ru:"Учитель"},
-      {en:"Engineer",ru:"Инженер"},
-      {en:"Driver",ru:"Водитель"},
-      {en:"Nurse",ru:"Медсестра"},
-      {en:"Police officer",ru:"Полицейский"},
-      {en:"Firefighter",ru:"Пожарный"},
-      {en:"Chef",ru:"Повар"},
-      {en:"Farmer",ru:"Фермер"},
-      {en:"Artist",ru:"Художник"}
-    ],completed:false
-  },
-  // Урок 20: Фразы для путешествий
-  {
-    title:"Урок 20: Путешествия",
-    words:[
-      {en:"Where is the hotel?",ru:"Где отель?"},
-      {en:"I need a taxi",ru:"Мне нужно такси"},
-      {en:"How much is it?",ru:"Сколько это стоит?"},
-      {en:"I want water",ru:"Я хочу воды"},
-      {en:"I am lost",ru:"Я потерялся"},
-      {en:"Can you help me?",ru:"Вы можете мне помочь?"},
-      {en:"I don't understand",ru:"Я не понимаю"},
-      {en:"Please speak slowly",ru:"Пожалуйста, говорите медленно"},
-      {en:"I need a doctor",ru:"Мне нужен врач"},
-      {en:"Thank you",ru:"Спасибо"}
-    ],completed:false
-  }
+  { title:"Урок 2: Семья", words:[
+    {en:"Father",ru:"отец"}, {en:"Mother",ru:"мать"}, {en:"Brother",ru:"брат"}, {en:"Sister",ru:"сестра"},
+    {en:"Son",ru:"сын"}, {en:"Daughter",ru:"дочь"}, {en:"Parents",ru:"родители"}, {en:"Family",ru:"семья"},
+    {en:"Grandfather",ru:"дедушка"}, {en:"Grandmother",ru:"бабушка"}, {en:"Husband",ru:"муж"}, {en:"Wife",ru:"жена"},
+    {en:"Uncle",ru:"дядя"}, {en:"Aunt",ru:"тётя"}, {en:"Cousin",ru:"двоюродный брат/сестра"}, {en:"Relative",ru:"родственник"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 3: Числа", words:[
+    {en:"Zero",ru:"ноль"},{en:"One",ru:"один"},{en:"Two",ru:"два"},{en:"Three",ru:"три"},{en:"Four",ru:"четыре"},
+    {en:"Five",ru:"пять"},{en:"Six",ru:"шесть"},{en:"Seven",ru:"семь"},{en:"Eight",ru:"восемь"},{en:"Nine",ru:"девять"},
+    {en:"Ten",ru:"десять"},{en:"Twenty",ru:"двадцать"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 4: Цвета", words:[
+    {en:"Red",ru:"красный"},{en:"Blue",ru:"синий"},{en:"Green",ru:"зелёный"},{en:"Yellow",ru:"жёлтый"},
+    {en:"Black",ru:"чёрный"},{en:"White",ru:"белый"},{en:"Orange",ru:"оранжевый"},{en:"Pink",ru:"розовый"},
+    {en:"Purple",ru:"фиолетовый"},{en:"Brown",ru:"коричневый"},{en:"Gray",ru:"серый"},{en:"Beige",ru:"бежевый"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 5: Страны и национальности", words:[
+    {en:"Uzbekistan / Uzbek",ru:"узбекистан / узбек"},
+    {en:"Russia / Russian",ru:"россия / русский"},
+    {en:"USA / American",ru:"сша / американец"},
+    {en:"UK / British",ru:"великобритания / британец"},
+    {en:"China / Chinese",ru:"китай / китаец"},
+    {en:"India / Indian",ru:"индия / индиец"},
+    {en:"Germany / German",ru:"германия / немец"},
+    {en:"France / French",ru:"франция / француз"},
+    {en:"Spain / Spanish",ru:"испания / испанец"},
+    {en:"Italy / Italian",ru:"италия / итальянец"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 6: Профессии", words:[
+    {en:"Doctor",ru:"доктор"}, {en:"Teacher",ru:"учитель"}, {en:"Engineer",ru:"инженер"},
+    {en:"Driver",ru:"водитель"}, {en:"Nurse",ru:"медсестра"}, {en:"Police officer",ru:"полицейский"},
+    {en:"Firefighter",ru:"пожарный"}, {en:"Chef",ru:"повар"}, {en:"Farmer",ru:"фермер"}, {en:"Artist",ru:"художник"},
+    {en:"Worker",ru:"рабочий"}, {en:"Student",ru:"студент"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 7: Дом и мебель", words:[
+    {en:"House",ru:"дом"},{en:"Apartment",ru:"квартира"},{en:"Room",ru:"комната"},{en:"Kitchen",ru:"кухня"},
+    {en:"Bathroom",ru:"ванная"},{en:"Bedroom",ru:"спальня"},{en:"Living room",ru:"гостиная"},
+    {en:"Table",ru:"стол"},{en:"Chair",ru:"стул"},{en:"Bed",ru:"кровать"},{en:"Sofa",ru:"диван"},
+    {en:"Window",ru:"окно"},{en:"Door",ru:"дверь"},{en:"Fridge",ru:"холодильник"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 8: Еда и напитки", words:[
+    {en:"Water",ru:"вода"},{en:"Tea",ru:"чай"},{en:"Coffee",ru:"кофе"},{en:"Milk",ru:"молоко"},
+    {en:"Bread",ru:"хлеб"},{en:"Butter",ru:"масло"},{en:"Cheese",ru:"сыр"},{en:"Egg",ru:"яйцо"},
+    {en:"Rice",ru:"рис"},{en:"Meat",ru:"мясо"},{en:"Fish",ru:"рыба"},{en:"Soup",ru:"суп"},
+    {en:"Apple",ru:"яблоко"},{en:"Banana",ru:"банан"},{en:"Orange",ru:"апельсин"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 9: Животные", words:[
+    {en:"Dog",ru:"собака"},{en:"Cat",ru:"кошка"},{en:"Bird",ru:"птица"},{en:"Cow",ru:"корова"},
+    {en:"Horse",ru:"лошадь"},{en:"Sheep",ru:"овца"},{en:"Pig",ru:"свинья"},{en:"Rabbit",ru:"кролик"},
+    {en:"Mouse",ru:"мышь"},{en:"Duck",ru:"утка"},{en:"Chicken",ru:"курица"},{en:"Goat",ru:"коза"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 10: Время и дни недели", words:[
+    {en:"Monday",ru:"понедельник"},{en:"Tuesday",ru:"вторник"},{en:"Wednesday",ru:"среда"},
+    {en:"Thursday",ru:"четверг"},{en:"Friday",ru:"пятница"},{en:"Saturday",ru:"суббота"},
+    {en:"Sunday",ru:"воскресенье"},{en:"Morning",ru:"утро"},{en:"Afternoon",ru:"день"},
+    {en:"Evening",ru:"вечер"},{en:"Night",ru:"ночь"},{en:"Today",ru:"сегодня"},
+    {en:"Yesterday",ru:"вчера"},{en:"Tomorrow",ru:"завтра"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 11: Погода и сезоны", words:[
+    {en:"Sunny",ru:"солнечно"},{en:"Rainy",ru:"дождливо"},{en:"Cloudy",ru:"облачно"},{en:"Windy",ru:"ветрено"},
+    {en:"Snowy",ru:"снежно"},{en:"Hot",ru:"жарко"},{en:"Cold",ru:"холодно"},{en:"Warm",ru:"тепло"},
+    {en:"Cool",ru:"прохладно"},{en:"Storm",ru:"шторм"},{en:"Fog",ru:"туман"},
+    {en:"Spring",ru:"весна"},{en:"Summer",ru:"лето"},{en:"Autumn",ru:"осень"},{en:"Winter",ru:"зима"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 12: Хобби и интересы", words:[
+    {en:"Reading",ru:"чтение"},{en:"Drawing",ru:"рисование"},{en:"Painting",ru:"живопись"},
+    {en:"Music",ru:"музыка"},{en:"Dancing",ru:"танцы"},{en:"Singing",ru:"пение"},
+    {en:"Swimming",ru:"плавание"},{en:"Running",ru:"бег"},{en:"Cycling",ru:"велоспорт"},
+    {en:"Traveling",ru:"путешествия"},{en:"Cooking",ru:"готовка"},{en:"Photography",ru:"фотография"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 13: Базовые ежедневные глаголы", words:[
+    {en:"Go",ru:"идти"}, {en:"Come",ru:"приходить"}, {en:"Do",ru:"делать"}, {en:"Make",ru:"создавать"},
+    {en:"Have",ru:"иметь"}, {en:"Want",ru:"хотеть"}, {en:"Need",ru:"нуждаться"}, {en:"Like",ru:"нравиться"},
+    {en:"Know",ru:"знать"}, {en:"Think",ru:"думать"}, {en:"See",ru:"видеть"}, {en:"Get",ru:"получать"},
+    {en:"Give",ru:"давать"}, {en:"Use",ru:"использовать"}, {en:"Work",ru:"работать"}, {en:"Live",ru:"жить"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 14: Школа и учёба", words:[
+    {en:"School",ru:"школа"},{en:"Teacher",ru:"учитель"},{en:"Student",ru:"ученик"},
+    {en:"Class",ru:"класс"},{en:"Lesson",ru:"урок"},{en:"Homework",ru:"домашнее задание"},
+    {en:"Book",ru:"книга"},{en:"Notebook",ru:"тетрадь"},{en:"Pen",ru:"ручка"},{en:"Pencil",ru:"карандаш"},
+    {en:"Ruler",ru:"линейка"},{en:"Eraser",ru:"ластик"},{en:"Desk",ru:"парта"},{en:"Chair",ru:"стул"},
+    {en:"Blackboard",ru:"доска"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 15: Город и транспорт", words:[
+    {en:"City",ru:"город"},{en:"Town",ru:"городок"},{en:"Village",ru:"деревня"},{en:"Street",ru:"улица"},
+    {en:"Park",ru:"парк"},{en:"Shop",ru:"магазин"},{en:"Market",ru:"рынок"},{en:"Bank",ru:"банк"},
+    {en:"Post office",ru:"почта"},{en:"Hospital",ru:"больница"},{en:"Hotel",ru:"отель"},
+    {en:"Bus",ru:"автобус"},{en:"Car",ru:"машина"},{en:"Taxi",ru:"такси"},{en:"Train",ru:"поезд"},
+    {en:"Subway",ru:"метро"},{en:"Airport",ru:"аэропорт"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 16: Одежда", words:[
+    {en:"Shirt",ru:"рубашка"},{en:"T-shirt",ru:"футболка"},{en:"Sweater",ru:"свитер"},
+    {en:"Jacket",ru:"куртка"},{en:"Coat",ru:"пальто"},{en:"Jeans",ru:"джинсы"},{en:"Pants",ru:"брюки"},
+    {en:"Dress",ru:"платье"},{en:"Skirt",ru:"юбка"},{en:"Shoes",ru:"обувь"},{en:"Boots",ru:"ботинки"},
+    {en:"Socks",ru:"носки"},{en:"Hat",ru:"шляпа"},{en:"Scarf",ru:"шарф"},{en:"Gloves",ru:"перчатки"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 17: Магазины и покупки", words:[
+    {en:"Buy",ru:"покупать"},{en:"Sell",ru:"продавать"},{en:"Price",ru:"цена"},
+    {en:"Cheap",ru:"дешёвый"},{en:"Expensive",ru:"дорогой"},{en:"Cash",ru:"наличные"},
+    {en:"Card",ru:"карта"},{en:"Receipt",ru:"чек"},{en:"Discount",ru:"скидка"},
+    {en:"Fitting room",ru:"примерочная"},{en:"Size",ru:"размер"},{en:"Color",ru:"цвет"},
+    {en:"Cashier",ru:"кассир"},{en:"Customer",ru:"клиент"},{en:"Queue",ru:"очередь"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 18: Чувства и состояния", words:[
+    {en:"Happy",ru:"счастливый"},{en:"Sad",ru:"грустный"},{en:"Angry",ru:"сердитый"},{en:"Tired",ru:"уставший"},
+    {en:"Bored",ru:"скучающий"},{en:"Excited",ru:"взволнованный"},{en:"Surprised",ru:"удивлённый"},
+    {en:"Scared",ru:"испуганный"},{en:"Nervous",ru:"нервный"},{en:"Hungry",ru:"голодный"},{en:"Thirsty",ru:"хочущий пить"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 19: Части тела", words:[
+    {en:"Head",ru:"голова"},{en:"Face",ru:"лицо"},{en:"Hair",ru:"волосы"},{en:"Eye",ru:"глаз"},
+    {en:"Ear",ru:"ухо"},{en:"Nose",ru:"нос"},{en:"Mouth",ru:"рот"},{en:"Tooth",ru:"зуб"},
+    {en:"Hand",ru:"рука"},{en:"Arm",ru:"предплечье"},{en:"Finger",ru:"палец"},
+    {en:"Leg",ru:"нога"},{en:"Foot",ru:"стопа"},{en:"Knee",ru:"колено"},{en:"Back",ru:"спина"},
+    {en:"Shoulder",ru:"плечо"},{en:"Stomach",ru:"живот"}
+  ], completed:false, lastPercent:0 },
+
+  { title:"Урок 20: Повседневные фразы", words:[
+    {en:"Where is ...?",ru:"где находится"},
+    {en:"How much is it?",ru:"сколько это стоит"},
+    {en:"I don't understand",ru:"я не понимаю"},
+    {en:"Please speak slowly",ru:"пожалуйста говорите медленно"},
+    {en:"Could you repeat?",ru:"не могли бы вы повторить"},
+    {en:"Can you help me?",ru:"вы можете мне помочь"},
+    {en:"I'm sorry",ru:"мне жаль"},
+    {en:"Thank you",ru:"спасибо"},
+    {en:"Excuse me",ru:"извините"},
+    {en:"See you later",ru:"увидимся позже"},
+    {en:"What time is it?",ru:"который час"},
+    {en:"I need ...",ru:"мне нужно"},
+    {en:"I want ...",ru:"я хочу"}
+  ], completed:false, lastPercent:0 },
 ];
 
+// ====== ПОЛЕЗНОЕ ======
+const lessonsGrid = document.getElementById("lessonsGrid");
+const mainPage = document.getElementById("mainPage");
+const lessonPage = document.getElementById("lessonPage");
+const testPage = document.getElementById("testPage");
+const summaryPage = document.getElementById("summaryPage");
 
-let lessonIndex=0, wordIndex=0, testIndex=0, currentLesson=null;
-let theoryCompleted=false, correct=0, wrong=0;
+const lessonTitle = document.getElementById("lessonTitle");
+const lessonBadge = document.getElementById("lessonBadge");
+const wordList = document.getElementById("wordList");
+const startTestBtn = document.getElementById("startTestBtn");
+const backToMain1 = document.getElementById("backToMain1");
+const backToMain2 = document.getElementById("backToMain2");
+const againBtn = document.getElementById("againBtn");
 
-function renderLessons(){
-  lessonsList.innerHTML="";
-  lessons.forEach((lesson,i)=>{
-    const div=document.createElement("div");
-    div.className="lesson-card"+(i>0&&!lessons[i-1].completed?" locked":"");
-    div.innerHTML=lesson.title;
-    div.addEventListener("click",()=>{
-      if(i===0||lessons[i-1].completed) startTheory(i);
-    });
-    lessonsList.appendChild(div);
-  });
+const testWord = document.getElementById("testWord");
+const testForm = document.getElementById("testForm");
+const testInput = document.getElementById("testInput");
+const testFeedback = document.getElementById("testFeedback");
+const skipBtn = document.getElementById("skipBtn");
+const stopTestBtn = document.getElementById("stopTestBtn");
+const testPos = document.getElementById("testPos");
+
+const sumCorrect = document.getElementById("sumCorrect");
+const sumWrong = document.getElementById("sumWrong");
+const sumPercent = document.getElementById("sumPercent");
+const resetBtn = document.getElementById("resetBtn");
+
+let currentLessonIndex = 0;
+let currentLesson = null;
+let testIndex = 0, correct = 0, wrong = 0;
+
+// ====== Сохранение / загрузка ======
+function saveProgress(){
+  localStorage.setItem("a1_lessons_progress", JSON.stringify(lessons));
+}
+function loadProgress(){
+  const saved = localStorage.getItem("a1_lessons_progress");
+  if(!saved) return;
+  try{
+    const parsed = JSON.parse(saved);
+    // если структура совпадает по количеству, примем сохранённое
+    if (Array.isArray(parsed) && parsed.length === lessons.length){
+      lessons = parsed;
+    }
+  }catch{}
+}
+loadProgress();
+
+// ====== Нормализация (игнор пунктуации) ======
+function normalize(str){
+  return String(str || "")
+    .toLowerCase()
+    .replace(/[.,!?;:()«»"']/g,"")
+    .replace(/\s+/g," ")
+    .trim();
 }
 
-function startTheory(index){
-  lessonIndex=index;
-  currentLesson=lessons[index];
-  wordIndex=0;
-  theoryCompleted=false;
-  showSection(theoryPage);
-  renderTheoryWord();
-}
-
-function renderTheoryWord(){
-  const w=currentLesson.words[wordIndex];
-  wordText.textContent=w.en;
-  translationText.textContent=w.ru;
-}
-
-nextWordBtn.addEventListener("click",()=>{
-  wordIndex++;
-  if(wordIndex>=currentLesson.words.length){
-    theoryCompleted=true;
-    nextWordBtn.style.display="none";
-    alert("Теория пройдена! Теперь можно пройти тест.");
-    startTest();
-  }else renderTheoryWord();
-});
-
-backMainBtn.addEventListener("click",()=>showSection(mainPage));
-
-function startTest(){
-  testIndex=0; correct=0; wrong=0;
-  showSection(testPage);
-  renderTestWord();
-}
-
-function renderTestWord(){
-  const w=currentLesson.words[testIndex];
-  testWord.textContent=w.en;
-  testInput.value="";
-  testFeedback.style.display="none";
-  testInput.focus();
-}
-
-testForm.addEventListener("submit",e=>{
-  e.preventDefault();
-  const w=currentLesson.words[testIndex];
-  if(testInput.value.trim().toLowerCase()===w.ru.toLowerCase()){
-    testFeedback.textContent="Верно!";
-    testFeedback.className="feedback correct";
-    correct++;
-  }else{
-    testFeedback.textContent=`Неверно! Правильно: ${w.ru}`;
-    testFeedback.className="feedback wrong";
-    wrong++;
-  }
-  testFeedback.style.display="block";
-  setTimeout(()=>{
-    testIndex++;
-    if(testIndex>=currentLesson.words.length){
-      finishLesson();
-    }else renderTestWord();
-  },500);
-});
-
-skipTestBtn.addEventListener("click",()=>{
-  testIndex++;
-  if(testIndex>=currentLesson.words.length) finishLesson();
-  else renderTestWord();
-});
-
-function finishLesson(){
-  currentLesson.completed=correct===currentLesson.words.length;
-  showSection(summaryPage);
-  sumCorrect.textContent=correct;
-  sumWrong.textContent=wrong;
-  sumPercent.textContent=Math.round(correct/currentLesson.words.length*100)+"%";
-  renderLessons();
-}
-
-againBtn.addEventListener("click",()=>startTheory(lessonIndex));
-toMainBtn.addEventListener("click",()=>showSection(mainPage));
-
+// ====== UI ======
 function showSection(sec){
-  [mainPage,theoryPage,testPage,summaryPage].forEach(s=>s.classList.remove("active"));
+  [mainPage,lessonPage,testPage,summaryPage].forEach(s=>s.classList.remove("active"));
   sec.classList.add("active");
 }
 
-themeToggle.addEventListener("click",()=>document.body.classList.toggle("light"));
+function renderLessons(){
+  lessonsGrid.innerHTML = "";
+  lessons.forEach((l,i)=>{
+    // блокировка: если есть предыдущий и он не completed, то lock
+    const locked = (i>0 && !lessons[i-1].completed);
+    const card = document.createElement("div");
+    card.className = "card" + (locked ? " locked" : "");
 
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = l.title;
+
+    const subtitle = document.createElement("div");
+    subtitle.className = "subtitle";
+    subtitle.textContent = locked ? "Откроется после 100% предыдущего урока" : "Готов к изучению";
+
+    const progress = document.createElement("div");
+    progress.className = "progress";
+    const fill = document.createElement("div");
+    fill.className = "fill";
+    fill.style.width = (l.lastPercent||0) + "%";
+    progress.appendChild(fill);
+
+    const row = document.createElement("div");
+    row.className = "row";
+    const percent = document.createElement("span");
+    percent.className = "badge";
+    percent.textContent = (l.lastPercent||0) + "%";
+    const status = document.createElement("span");
+    status.className = "badge";
+    status.textContent = l.completed ? "Завершён ✅" : "Не завершён";
+    row.append(percent,status);
+
+    card.append(title,subtitle,progress,row);
+    if(!locked){
+      card.addEventListener("click",()=>openLesson(i));
+    }
+    lessonsGrid.appendChild(card);
+  });
+}
+
+function openLesson(index){
+  currentLessonIndex = index;
+  currentLesson = lessons[index];
+  lessonTitle.textContent = currentLesson.title;
+  lessonBadge.textContent = `Слов: ${currentLesson.words.length} • Прогресс: ${currentLesson.lastPercent||0}%`;
+  wordList.innerHTML = currentLesson.words.map(w=>`<div class="word">${w.en} — ${w.ru}</div>`).join("");
+  showSection(lessonPage);
+}
+
+function startTest(){
+  correct = 0; wrong = 0; testIndex = 0;
+  testFeedback.style.display = "none";
+  renderTestWord();
+  showSection(testPage);
+}
+
+function renderTestWord(){
+  const w = currentLesson.words[testIndex];
+  testPos.textContent = `${testIndex+1} / ${currentLesson.words.length}`;
+  testWord.innerHTML = `<div id="testWord" class="word"><b>${w.en}</b></div>`;
+  testInput.value = "";
+  testInput.focus();
+}
+
+testForm.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const w = currentLesson.words[testIndex];
+  if (normalize(testInput.value) === normalize(w.ru)){
+    testFeedback.textContent = "Верно!";
+    testFeedback.className = "feedback correct";
+    correct++;
+  }else{
+    testFeedback.textContent = `Неверно! Правильно: ${w.ru}`;
+    testFeedback.className = "feedback wrong";
+    wrong++;
+  }
+  testFeedback.style.display = "block";
+  setTimeout(()=>{
+    testIndex++;
+    if(testIndex >= currentLesson.words.length){
+      finishLesson();
+    }else{
+      testFeedback.style.display = "none";
+      renderTestWord();
+    }
+  }, 500);
+});
+
+skipBtn.addEventListener("click", ()=>{
+  testIndex++;
+  if(testIndex >= currentLesson.words.length){
+    finishLesson();
+  }else{
+    testFeedback.style.display = "none";
+    renderTestWord();
+  }
+});
+
+function finishLesson(){
+  const percent = Math.round((correct / currentLesson.words.length) * 100);
+  currentLesson.lastPercent = percent;
+  currentLesson.completed = percent === 100; // завершён только при 100%
+  saveProgress();
+  // Показать сводку
+  sumCorrect.textContent = correct;
+  sumWrong.textContent = wrong;
+  sumPercent.textContent = percent + "%";
+  renderLessons();
+  showSection(summaryPage);
+}
+
+document.getElementById("backToMain1").addEventListener("click",()=>showSection(mainPage));
+document.getElementById("backToMain2").addEventListener("click",()=>showSection(mainPage));
+document.getElementById("againBtn").addEventListener("click",()=>startTest());
+document.getElementById("startTestBtn").addEventListener("click",()=>startTest());
+document.getElementById("stopTestBtn").addEventListener("click",()=>showSection(lessonPage));
+
+resetBtn.addEventListener("click", ()=>{
+  if(confirm("Точно сбросить весь прогресс?")){
+    lessons.forEach(l=>{ l.completed=false; l.lastPercent=0; });
+    saveProgress();
+    renderLessons();
+    showSection(mainPage);
+  }
+});
+
+// Первичный рендер
 renderLessons();
 </script>
 </body>
