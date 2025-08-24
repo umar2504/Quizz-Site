@@ -11,7 +11,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;background:var(--dark-bg);color:var(--dark-text);min-height:100vh;display:flex;flex-direction:column}
-header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;gap:10px;flex-wrap:wrap}
 h1{font-size:22px}
 main{flex:1;display:flex;flex-direction:column;gap:16px;padding:16px}
 
@@ -36,7 +36,7 @@ main{flex:1;display:flex;flex-direction:column;gap:16px;padding:16px}
 .words{margin:10px 0 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;font-size:15px;opacity:.95}
 .word{padding:8px 10px;background:#1d2030;border-radius:10px}
 
-#testWord{font-size:28px;margin-bottom:12px}
+#testPrompt{font-size:28px;margin-bottom:12px}
 input[type="text"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3a3d52;background:#1d2030;color:#fff;font-size:16px;outline:none}
 .controls{display:flex;gap:10px;margin-top:10px}
 .feedback{margin-top:10px;padding:10px;border-radius:10px;display:none}
@@ -52,7 +52,10 @@ hr{border:none;height:1px;background:#34384e;margin:10px 0}
 <body>
 <header>
   <h1>English A1: Beginner → Elementary (20 уроков)</h1>
-  <button id="resetBtn" class="button back">Сбросить прогресс</button>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button id="langBtn" class="button">🇷🇺 Русский</button>
+    <button id="resetBtn" class="button back">Сбросить прогресс</button>
+  </div>
 </header>
 
 <main>
@@ -79,9 +82,9 @@ hr{border:none;height:1px;background:#34384e;margin:10px 0}
     <div class="panel">
       <div class="row"><h2>Тест</h2><span class="badge small" id="testPos"></span></div>
       <hr/>
-      <div id="testWord"></div>
+      <div id="testPrompt"></div>
       <form id="testForm">
-        <input id="testInput" type="text" autocomplete="off" placeholder="Введите перевод на русский"/>
+        <input id="testInput" type="text" autocomplete="off" placeholder="Введите перевод на английский"/>
         <div class="controls">
           <button class="button" type="submit">Проверить</button>
           <button class="button back" type="button" id="skipBtn">Пропустить</button>
@@ -111,166 +114,366 @@ hr{border:none;height:1px;background:#34384e;margin:10px 0}
 </main>
 
 <script>
-// ====== ДАННЫЕ (20 тем от Beginner к Elementary) ======
+// ====== ЯЗЫК (RU ↔ UZ) ======
+let currentLang = localStorage.getItem("a1_lang") || "ru"; // 'ru' или 'uz'
+const langBtn = document.getElementById("langBtn");
+function setLangUI(){
+  langBtn.textContent = currentLang === "ru" ? "🇷🇺 Русский" : "🇺🇿 O‘zbekcha";
+  // плейсхолдер для инпута
+  testInput.setAttribute(
+    "placeholder",
+    currentLang === "ru" ? "Введите перевод на английский" : "Inglizcha tarjimani kiriting"
+  );
+  // перерисовать текущий урок/тест, если открыт
+  if (lessonPage.classList.contains("active")) openLesson(currentLessonIndex);
+  if (testPage.classList.contains("active")) renderTestWord();
+}
+langBtn.addEventListener("click", ()=>{
+  currentLang = currentLang === "ru" ? "uz" : "ru";
+  localStorage.setItem("a1_lang", currentLang);
+  setLangUI();
+});
+
+// ====== ДАННЫЕ (20 тем, RU + UZ) ======
 let lessons = [
   { title:"Урок 1: Приветствия и знакомство", words:[
-    {en:"Hello",ru:"привет"}, {en:"Hi",ru:"привет"},
-    {en:"Good morning",ru:"доброе утро"}, {en:"Good afternoon",ru:"добрый день"},
-    {en:"Good evening",ru:"добрый вечер"}, {en:"Good night",ru:"спокойной ночи"},
-    {en:"How are you?",ru:"как дела"}, {en:"I'm fine",ru:"я в порядке"},
-    {en:"What's your name?",ru:"как тебя зовут"}, {en:"My name is...",ru:"меня зовут"},
-    {en:"Nice to meet you",ru:"приятно познакомиться"}, {en:"Goodbye",ru:"до свидания"},
-    {en:"See you",ru:"увидимся"}, {en:"Thank you",ru:"спасибо"},
-    {en:"You're welcome",ru:"пожалуйста"}, {en:"Excuse me",ru:"извините"}, {en:"Sorry",ru:"простите"}
+    {en:"Hello",ru:"привет",uz:"salom"},
+    {en:"Hi",ru:"привет",uz:"salom"},
+    {en:"Good morning",ru:"доброе утро",uz:"xayrli tong"},
+    {en:"Good afternoon",ru:"добрый день",uz:"xayrli kun"},
+    {en:"Good evening",ru:"добрый вечер",uz:"xayrli kech"},
+    {en:"Good night",ru:"спокойной ночи",uz:"xayrli tun"},
+    {en:"How are you?",ru:"как дела",uz:"qalaysiz?"},
+    {en:"I'm fine",ru:"я в порядке",uz:"men yaxshiman"},
+    {en:"What's your name?",ru:"как тебя зовут",uz:"ismingiz nima?"},
+    {en:"My name is...",ru:"меня зовут",uz:"mening ismim ..."},
+    {en:"Nice to meet you",ru:"приятно познакомиться",uz:"tanishganimdan xursandman"},
+    {en:"Goodbye",ru:"до свидания",uz:"xayr"},
+    {en:"See you",ru:"увидимся",uz:"ko‘rishguncha"},
+    {en:"Thank you",ru:"спасибо",uz:"rahmat"},
+    {en:"You're welcome",ru:"пожалуйста",uz:"arzimaydi"},
+    {en:"Excuse me",ru:"извините",uz:"kechirasiz"},
+    {en:"Sorry",ru:"простите",uz:"uzr"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 2: Семья", words:[
-    {en:"Father",ru:"отец"}, {en:"Mother",ru:"мать"}, {en:"Brother",ru:"брат"}, {en:"Sister",ru:"сестра"},
-    {en:"Son",ru:"сын"}, {en:"Daughter",ru:"дочь"}, {en:"Parents",ru:"родители"}, {en:"Family",ru:"семья"},
-    {en:"Grandfather",ru:"дедушка"}, {en:"Grandmother",ru:"бабушка"}, {en:"Husband",ru:"муж"}, {en:"Wife",ru:"жена"},
-    {en:"Uncle",ru:"дядя"}, {en:"Aunt",ru:"тётя"}, {en:"Cousin",ru:"двоюродный брат/сестра"}, {en:"Relative",ru:"родственник"}
+    {en:"Father",ru:"отец",uz:"ota"},
+    {en:"Mother",ru:"мать",uz:"ona"},
+    {en:"Brother",ru:"брат",uz:"aka"},
+    {en:"Sister",ru:"сестра",uz:"opa"},
+    {en:"Son",ru:"сын",uz:"o‘g‘il"},
+    {en:"Daughter",ru:"дочь",uz:"qiz"},
+    {en:"Parents",ru:"родители",uz:"ota-ona"},
+    {en:"Family",ru:"семья",uz:"oila"},
+    {en:"Grandfather",ru:"дедушка",uz:"bobo"},
+    {en:"Grandmother",ru:"бабушка",uz:"buvi"},
+    {en:"Husband",ru:"муж",uz:"er"},
+    {en:"Wife",ru:"жена",uz:"xotin"},
+    {en:"Uncle",ru:"дядя",uz:"amaki"},
+    {en:"Aunt",ru:"тётя",uz:"xola"},
+    {en:"Cousin",ru:"двоюродный брат/сестра",uz:"amakivachcha (qarindosh)"},
+    {en:"Relative",ru:"родственник",uz:"qarindosh"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 3: Числа", words:[
-    {en:"Zero",ru:"ноль"},{en:"One",ru:"один"},{en:"Two",ru:"два"},{en:"Three",ru:"три"},{en:"Four",ru:"четыре"},
-    {en:"Five",ru:"пять"},{en:"Six",ru:"шесть"},{en:"Seven",ru:"семь"},{en:"Eight",ru:"восемь"},{en:"Nine",ru:"девять"},
-    {en:"Ten",ru:"десять"},{en:"Twenty",ru:"двадцать"}
+    {en:"Zero",ru:"ноль",uz:"nol"},
+    {en:"One",ru:"один",uz:"bir"},
+    {en:"Two",ru:"два",uz:"ikki"},
+    {en:"Three",ru:"три",uz:"uch"},
+    {en:"Four",ru:"четыре",uz:"to‘rt"},
+    {en:"Five",ru:"пять",uz:"besh"},
+    {en:"Six",ru:"шесть",uz:"olti"},
+    {en:"Seven",ru:"семь",uz:"yetti"},
+    {en:"Eight",ru:"восемь",uz:"sakkiz"},
+    {en:"Nine",ru:"девять",uz:"to‘qqiz"},
+    {en:"Ten",ru:"десять",uz:"o‘n"},
+    {en:"Twenty",ru:"двадцать",uz:"yigirma"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 4: Цвета", words:[
-    {en:"Red",ru:"красный"},{en:"Blue",ru:"синий"},{en:"Green",ru:"зелёный"},{en:"Yellow",ru:"жёлтый"},
-    {en:"Black",ru:"чёрный"},{en:"White",ru:"белый"},{en:"Orange",ru:"оранжевый"},{en:"Pink",ru:"розовый"},
-    {en:"Purple",ru:"фиолетовый"},{en:"Brown",ru:"коричневый"},{en:"Gray",ru:"серый"},{en:"Beige",ru:"бежевый"}
+    {en:"Red",ru:"красный",uz:"qizil"},
+    {en:"Blue",ru:"синий",uz:"ko‘k"},
+    {en:"Green",ru:"зелёный",uz:"yashil"},
+    {en:"Yellow",ru:"жёлтый",uz:"sariq"},
+    {en:"Black",ru:"чёрный",uz:"qora"},
+    {en:"White",ru:"белый",uz:"oq"},
+    {en:"Orange",ru:"оранжевый",uz:"to‘q sariq"},
+    {en:"Pink",ru:"розовый",uz:"pushti"},
+    {en:"Purple",ru:"фиолетовый",uz:"binafsha"},
+    {en:"Brown",ru:"коричневый",uz:"jigarrang"},
+    {en:"Gray",ru:"серый",uz:"kulrang"},
+    {en:"Beige",ru:"бежевый",uz:"bej"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 5: Страны и национальности", words:[
-    {en:"Uzbekistan / Uzbek",ru:"узбекистан / узбек"},
-    {en:"Russia / Russian",ru:"россия / русский"},
-    {en:"USA / American",ru:"сша / американец"},
-    {en:"UK / British",ru:"великобритания / британец"},
-    {en:"China / Chinese",ru:"китай / китаец"},
-    {en:"India / Indian",ru:"индия / индиец"},
-    {en:"Germany / German",ru:"германия / немец"},
-    {en:"France / French",ru:"франция / француз"},
-    {en:"Spain / Spanish",ru:"испания / испанец"},
-    {en:"Italy / Italian",ru:"италия / итальянец"}
+    {en:"Uzbekistan / Uzbek",ru:"узбекистан / узбек",uz:"O‘zbekiston / o‘zbek"},
+    {en:"Russia / Russian",ru:"россия / русский",uz:"Rossiya / rus"},
+    {en:"USA / American",ru:"сша / американец",uz:"AQSH / amerikalik"},
+    {en:"UK / British",ru:"великобритания / британец",uz:"Buyuk Britaniya / britaniyalik"},
+    {en:"China / Chinese",ru:"китай / китаец",uz:"Xitoy / xitoylik"},
+    {en:"India / Indian",ru:"индия / индиец",uz:"Hindiston / hind"},
+    {en:"Germany / German",ru:"германия / немец",uz:"Germaniya / nemis"},
+    {en:"France / French",ru:"франция / француз",uz:"Fransiya / fransuz"},
+    {en:"Spain / Spanish",ru:"испания / испанец",uz:"Ispaniya / ispan"},
+    {en:"Italy / Italian",ru:"италия / итальянец",uz:"Italiya / italiyalik"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 6: Профессии", words:[
-    {en:"Doctor",ru:"доктор"}, {en:"Teacher",ru:"учитель"}, {en:"Engineer",ru:"инженер"},
-    {en:"Driver",ru:"водитель"}, {en:"Nurse",ru:"медсестра"}, {en:"Police officer",ru:"полицейский"},
-    {en:"Firefighter",ru:"пожарный"}, {en:"Chef",ru:"повар"}, {en:"Farmer",ru:"фермер"}, {en:"Artist",ru:"художник"},
-    {en:"Worker",ru:"рабочий"}, {en:"Student",ru:"студент"}
+    {en:"Doctor",ru:"доктор",uz:"shifokor"},
+    {en:"Teacher",ru:"учитель",uz:"o‘qituvchi"},
+    {en:"Engineer",ru:"инженер",uz:"muhandis"},
+    {en:"Driver",ru:"водитель",uz:"haydovchi"},
+    {en:"Nurse",ru:"медсестра",uz:"hamshira"},
+    {en:"Police officer",ru:"полицейский",uz:"politsiya xodimi"},
+    {en:"Firefighter",ru:"пожарный",uz:"o‘t o‘chiruvchi"},
+    {en:"Chef",ru:"повар",uz:"bosh oshpaz"},
+    {en:"Farmer",ru:"фермер",uz:"dehqon"},
+    {en:"Artist",ru:"художник",uz:"rassom"},
+    {en:"Worker",ru:"рабочий",uz:"ishchi"},
+    {en:"Student",ru:"студент",uz:"talaba"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 7: Дом и мебель", words:[
-    {en:"House",ru:"дом"},{en:"Apartment",ru:"квартира"},{en:"Room",ru:"комната"},{en:"Kitchen",ru:"кухня"},
-    {en:"Bathroom",ru:"ванная"},{en:"Bedroom",ru:"спальня"},{en:"Living room",ru:"гостиная"},
-    {en:"Table",ru:"стол"},{en:"Chair",ru:"стул"},{en:"Bed",ru:"кровать"},{en:"Sofa",ru:"диван"},
-    {en:"Window",ru:"окно"},{en:"Door",ru:"дверь"},{en:"Fridge",ru:"холодильник"}
+    {en:"House",ru:"дом",uz:"uy"},
+    {en:"Apartment",ru:"квартира",uz:"kvartira"},
+    {en:"Room",ru:"комната",uz:"xona"},
+    {en:"Kitchen",ru:"кухня",uz:"oshxona"},
+    {en:"Bathroom",ru:"ванная",uz:"yuvinish xonasi"},
+    {en:"Bedroom",ru:"спальня",uz:"yotoqxona"},
+    {en:"Living room",ru:"гостиная",uz:"mehmonxona"},
+    {en:"Table",ru:"стол",uz:"stol"},
+    {en:"Chair",ru:"стул",uz:"stul"},
+    {en:"Bed",ru:"кровать",uz:"karovat"},
+    {en:"Sofa",ru:"диван",uz:"divan"},
+    {en:"Window",ru:"окно",uz:"deraza"},
+    {en:"Door",ru:"дверь",uz:"eshik"},
+    {en:"Fridge",ru:"холодильник",uz:"muzlatgich"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 8: Еда и напитки", words:[
-    {en:"Water",ru:"вода"},{en:"Tea",ru:"чай"},{en:"Coffee",ru:"кофе"},{en:"Milk",ru:"молоко"},
-    {en:"Bread",ru:"хлеб"},{en:"Butter",ru:"масло"},{en:"Cheese",ru:"сыр"},{en:"Egg",ru:"яйцо"},
-    {en:"Rice",ru:"рис"},{en:"Meat",ru:"мясо"},{en:"Fish",ru:"рыба"},{en:"Soup",ru:"суп"},
-    {en:"Apple",ru:"яблоко"},{en:"Banana",ru:"банан"},{en:"Orange",ru:"апельсин"}
+    {en:"Water",ru:"вода",uz:"suv"},
+    {en:"Tea",ru:"чай",uz:"choy"},
+    {en:"Coffee",ru:"кофе",uz:"qahva"},
+    {en:"Milk",ru:"молоко",uz:"sut"},
+    {en:"Bread",ru:"хлеб",uz:"non"},
+    {en:"Butter",ru:"масло",uz:"sariyog‘"},
+    {en:"Cheese",ru:"сыр",uz:"pishloq"},
+    {en:"Egg",ru:"яйцо",uz:"tuxum"},
+    {en:"Rice",ru:"рис",uz:"guruch"},
+    {en:"Meat",ru:"мясо",uz:"go‘sht"},
+    {en:"Fish",ru:"рыба",uz:"baliq"},
+    {en:"Soup",ru:"суп",uz:"sho‘rva"},
+    {en:"Apple",ru:"яблоко",uz:"olma"},
+    {en:"Banana",ru:"банан",uz:"banan"},
+    {en:"Orange",ru:"апельсин",uz:"apelsin"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 9: Животные", words:[
-    {en:"Dog",ru:"собака"},{en:"Cat",ru:"кошка"},{en:"Bird",ru:"птица"},{en:"Cow",ru:"корова"},
-    {en:"Horse",ru:"лошадь"},{en:"Sheep",ru:"овца"},{en:"Pig",ru:"свинья"},{en:"Rabbit",ru:"кролик"},
-    {en:"Mouse",ru:"мышь"},{en:"Duck",ru:"утка"},{en:"Chicken",ru:"курица"},{en:"Goat",ru:"коза"}
+    {en:"Dog",ru:"собака",uz:"it"},
+    {en:"Cat",ru:"кошка",uz:"mushuk"},
+    {en:"Bird",ru:"птица",uz:"qush"},
+    {en:"Cow",ru:"корова",uz:"sigir"},
+    {en:"Horse",ru:"лошадь",uz:"ot"},
+    {en:"Sheep",ru:"овца",uz:"qo‘y"},
+    {en:"Pig",ru:"свинья",uz:"cho‘chqa"},
+    {en:"Rabbit",ru:"кролик",uz:"quyon"},
+    {en:"Mouse",ru:"мышь",uz:"sichqon"},
+    {en:"Duck",ru:"утка",uz:"o‘rdak"},
+    {en:"Chicken",ru:"курица",uz:"tovuq"},
+    {en:"Goat",ru:"коза",uz:"echki"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 10: Время и дни недели", words:[
-    {en:"Monday",ru:"понедельник"},{en:"Tuesday",ru:"вторник"},{en:"Wednesday",ru:"среда"},
-    {en:"Thursday",ru:"четверг"},{en:"Friday",ru:"пятница"},{en:"Saturday",ru:"суббота"},
-    {en:"Sunday",ru:"воскресенье"},{en:"Morning",ru:"утро"},{en:"Afternoon",ru:"день"},
-    {en:"Evening",ru:"вечер"},{en:"Night",ru:"ночь"},{en:"Today",ru:"сегодня"},
-    {en:"Yesterday",ru:"вчера"},{en:"Tomorrow",ru:"завтра"}
+    {en:"Monday",ru:"понедельник",uz:"dushanba"},
+    {en:"Tuesday",ru:"вторник",uz:"seshanba"},
+    {en:"Wednesday",ru:"среда",uz:"chorshanba"},
+    {en:"Thursday",ru:"четверг",uz:"payshanba"},
+    {en:"Friday",ru:"пятница",uz:"juma"},
+    {en:"Saturday",ru:"суббота",uz:"shanba"},
+    {en:"Sunday",ru:"воскресенье",uz:"yakshanba"},
+    {en:"Morning",ru:"утро",uz:"ertalab"},
+    {en:"Afternoon",ru:"день",uz:"tushdan keyin"},
+    {en:"Evening",ru:"вечер",uz:"kechqurun"},
+    {en:"Night",ru:"ночь",uz:"tun"},
+    {en:"Today",ru:"сегодня",uz:"bugun"},
+    {en:"Yesterday",ru:"вчера",uz:"kecha"},
+    {en:"Tomorrow",ru:"завтра",uz:"ertaga"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 11: Погода и сезоны", words:[
-    {en:"Sunny",ru:"солнечно"},{en:"Rainy",ru:"дождливо"},{en:"Cloudy",ru:"облачно"},{en:"Windy",ru:"ветрено"},
-    {en:"Snowy",ru:"снежно"},{en:"Hot",ru:"жарко"},{en:"Cold",ru:"холодно"},{en:"Warm",ru:"тепло"},
-    {en:"Cool",ru:"прохладно"},{en:"Storm",ru:"шторм"},{en:"Fog",ru:"туман"},
-    {en:"Spring",ru:"весна"},{en:"Summer",ru:"лето"},{en:"Autumn",ru:"осень"},{en:"Winter",ru:"зима"}
+    {en:"Sunny",ru:"солнечно",uz:"quyoshli"},
+    {en:"Rainy",ru:"дождливо",uz:"yomg‘irli"},
+    {en:"Cloudy",ru:"облачно",uz:"bulutli"},
+    {en:"Windy",ru:"ветрено",uz:"shamolli"},
+    {en:"Snowy",ru:"снежно",uz:"qorli"},
+    {en:"Hot",ru:"жарко",uz:"issiq"},
+    {en:"Cold",ru:"холодно",uz:"sovuq"},
+    {en:"Warm",ru:"тепло",uz:"iliq"},
+    {en:"Cool",ru:"прохладно",uz:"salqin"},
+    {en:"Storm",ru:"шторм",uz:"bo‘ron"},
+    {en:"Fog",ru:"туман",uz:"tuman"},
+    {en:"Spring",ru:"весна",uz:"bahor"},
+    {en:"Summer",ru:"лето",uz:"yoz"},
+    {en:"Autumn",ru:"осень",uz:"kuz"},
+    {en:"Winter",ru:"зима",uz:"qish"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 12: Хобби и интересы", words:[
-    {en:"Reading",ru:"чтение"},{en:"Drawing",ru:"рисование"},{en:"Painting",ru:"живопись"},
-    {en:"Music",ru:"музыка"},{en:"Dancing",ru:"танцы"},{en:"Singing",ru:"пение"},
-    {en:"Swimming",ru:"плавание"},{en:"Running",ru:"бег"},{en:"Cycling",ru:"велоспорт"},
-    {en:"Traveling",ru:"путешествия"},{en:"Cooking",ru:"готовка"},{en:"Photography",ru:"фотография"}
+    {en:"Reading",ru:"чтение",uz:"o‘qish"},
+    {en:"Drawing",ru:"рисование",uz:"chizish"},
+    {en:"Painting",ru:"живопись",uz:"rangtasvir"},
+    {en:"Music",ru:"музыка",uz:"musiqa"},
+    {en:"Dancing",ru:"танцы",uz:"raqs"},
+    {en:"Singing",ru:"пение",uz:"qo‘shiq aytish"},
+    {en:"Swimming",ru:"плавание",uz:"suzish"},
+    {en:"Running",ru:"бег",uz:"yugurish"},
+    {en:"Cycling",ru:"велоспорт",uz:"velosport"},
+    {en:"Traveling",ru:"путешествия",uz:"sayohat"},
+    {en:"Cooking",ru:"готовка",uz:"ovqat pishirish"},
+    {en:"Photography",ru:"фотография",uz:"suratga olish"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 13: Базовые ежедневные глаголы", words:[
-    {en:"Go",ru:"идти"}, {en:"Come",ru:"приходить"}, {en:"Do",ru:"делать"}, {en:"Make",ru:"создавать"},
-    {en:"Have",ru:"иметь"}, {en:"Want",ru:"хотеть"}, {en:"Need",ru:"нуждаться"}, {en:"Like",ru:"нравиться"},
-    {en:"Know",ru:"знать"}, {en:"Think",ru:"думать"}, {en:"See",ru:"видеть"}, {en:"Get",ru:"получать"},
-    {en:"Give",ru:"давать"}, {en:"Use",ru:"использовать"}, {en:"Work",ru:"работать"}, {en:"Live",ru:"жить"}
+    {en:"Go",ru:"идти",uz:"bormoq"},
+    {en:"Come",ru:"приходить",uz:"kelmoq"},
+    {en:"Do",ru:"делать",uz:"qilmoq"},
+    {en:"Make",ru:"создавать",uz:"yasamoq"},
+    {en:"Have",ru:"иметь",uz:"ega bo‘lmoq"},
+    {en:"Want",ru:"хотеть",uz:"xohlamoq"},
+    {en:"Need",ru:"нуждаться",uz:"kerak bo‘lmoq"},
+    {en:"Like",ru:"нравиться",uz:"yoqtirmoq"},
+    {en:"Know",ru:"знать",uz:"bilmoq"},
+    {en:"Think",ru:"думать",uz:"o‘ylamoq"},
+    {en:"See",ru:"видеть",uz:"ko‘rmoq"},
+    {en:"Get",ru:"получать",uz:"olmoq"},
+    {en:"Give",ru:"давать",uz:"bermoq"},
+    {en:"Use",ru:"использовать",uz:"ishlatmoq"},
+    {en:"Work",ru:"работать",uz:"ishlamoq"},
+    {en:"Live",ru:"жить",uz:"yashamoq"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 14: Школа и учёба", words:[
-    {en:"School",ru:"школа"},{en:"Teacher",ru:"учитель"},{en:"Student",ru:"ученик"},
-    {en:"Class",ru:"класс"},{en:"Lesson",ru:"урок"},{en:"Homework",ru:"домашнее задание"},
-    {en:"Book",ru:"книга"},{en:"Notebook",ru:"тетрадь"},{en:"Pen",ru:"ручка"},{en:"Pencil",ru:"карандаш"},
-    {en:"Ruler",ru:"линейка"},{en:"Eraser",ru:"ластик"},{en:"Desk",ru:"парта"},{en:"Chair",ru:"стул"},
-    {en:"Blackboard",ru:"доска"}
+    {en:"School",ru:"школа",uz:"maktab"},
+    {en:"Teacher",ru:"учитель",uz:"o‘qituvchi"},
+    {en:"Student",ru:"ученик",uz:"o‘quvchi"},
+    {en:"Class",ru:"класс",uz:"sinf"},
+    {en:"Lesson",ru:"урок",uz:"dars"},
+    {en:"Homework",ru:"домашнее задание",uz:"uy vazifasi"},
+    {en:"Book",ru:"книга",uz:"kitob"},
+    {en:"Notebook",ru:"тетрадь",uz:"daftar"},
+    {en:"Pen",ru:"ручка",uz:"ruchka"},
+    {en:"Pencil",ru:"карандаш",uz:"qalam"},
+    {en:"Ruler",ru:"линейка",uz:"lineyka"},
+    {en:"Eraser",ru:"ластик",uz:"o‘chirg‘ich"},
+    {en:"Desk",ru:"парта",uz:"parta"},
+    {en:"Chair",ru:"стул",uz:"stul"},
+    {en:"Blackboard",ru:"доска",uz:"doska"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 15: Город и транспорт", words:[
-    {en:"City",ru:"город"},{en:"Town",ru:"городок"},{en:"Village",ru:"деревня"},{en:"Street",ru:"улица"},
-    {en:"Park",ru:"парк"},{en:"Shop",ru:"магазин"},{en:"Market",ru:"рынок"},{en:"Bank",ru:"банк"},
-    {en:"Post office",ru:"почта"},{en:"Hospital",ru:"больница"},{en:"Hotel",ru:"отель"},
-    {en:"Bus",ru:"автобус"},{en:"Car",ru:"машина"},{en:"Taxi",ru:"такси"},{en:"Train",ru:"поезд"},
-    {en:"Subway",ru:"метро"},{en:"Airport",ru:"аэропорт"}
+    {en:"City",ru:"город",uz:"shahar"},
+    {en:"Town",ru:"городок",uz:"shaharcha"},
+    {en:"Village",ru:"деревня",uz:"qishloq"},
+    {en:"Street",ru:"улица",uz:"ko‘cha"},
+    {en:"Park",ru:"парк",uz:"bog‘"},
+    {en:"Shop",ru:"магазин",uz:"do‘kon"},
+    {en:"Market",ru:"рынок",uz:"bozor"},
+    {en:"Bank",ru:"банк",uz:"bank"},
+    {en:"Post office",ru:"почта",uz:"pochta"},
+    {en:"Hospital",ru:"больница",uz:"shifoxona"},
+    {en:"Hotel",ru:"отель",uz:"mehmonxona"},
+    {en:"Bus",ru:"автобус",uz:"avtobus"},
+    {en:"Car",ru:"машина",uz:"mashina"},
+    {en:"Taxi",ru:"такси",uz:"taksi"},
+    {en:"Train",ru:"поезд",uz:"poyezd"},
+    {en:"Subway",ru:"метро",uz:"metro"},
+    {en:"Airport",ru:"аэропорт",uz:"aeroport"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 16: Одежда", words:[
-    {en:"Shirt",ru:"рубашка"},{en:"T-shirt",ru:"футболка"},{en:"Sweater",ru:"свитер"},
-    {en:"Jacket",ru:"куртка"},{en:"Coat",ru:"пальто"},{en:"Jeans",ru:"джинсы"},{en:"Pants",ru:"брюки"},
-    {en:"Dress",ru:"платье"},{en:"Skirt",ru:"юбка"},{en:"Shoes",ru:"обувь"},{en:"Boots",ru:"ботинки"},
-    {en:"Socks",ru:"носки"},{en:"Hat",ru:"шляпа"},{en:"Scarf",ru:"шарф"},{en:"Gloves",ru:"перчатки"}
+    {en:"Shirt",ru:"рубашка",uz:"ko‘ylak"},
+    {en:"T-shirt",ru:"футболка",uz:"futbolka"},
+    {en:"Sweater",ru:"свитер",uz:"sviter"},
+    {en:"Jacket",ru:"куртка",uz:"kurtka"},
+    {en:"Coat",ru:"пальто",uz:"palto"},
+    {en:"Jeans",ru:"джинсы",uz:"jinsi"},
+    {en:"Pants",ru:"брюки",uz:"shim"},
+    {en:"Dress",ru:"платье",uz:"libos (ko‘ylak)"},
+    {en:"Skirt",ru:"юбка",uz:"yubka"},
+    {en:"Shoes",ru:"обувь",uz:"poyabzal"},
+    {en:"Boots",ru:"ботинки",uz:"etik"},
+    {en:"Socks",ru:"носки",uz:"paypoq"},
+    {en:"Hat",ru:"шляпа",uz:"shlyapa"},
+    {en:"Scarf",ru:"шарф",uz:"sharf"},
+    {en:"Gloves",ru:"перчатки",uz:"qo‘lqop"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 17: Магазины и покупки", words:[
-    {en:"Buy",ru:"покупать"},{en:"Sell",ru:"продавать"},{en:"Price",ru:"цена"},
-    {en:"Cheap",ru:"дешёвый"},{en:"Expensive",ru:"дорогой"},{en:"Cash",ru:"наличные"},
-    {en:"Card",ru:"карта"},{en:"Receipt",ru:"чек"},{en:"Discount",ru:"скидка"},
-    {en:"Fitting room",ru:"примерочная"},{en:"Size",ru:"размер"},{en:"Color",ru:"цвет"},
-    {en:"Cashier",ru:"кассир"},{en:"Customer",ru:"клиент"},{en:"Queue",ru:"очередь"}
+    {en:"Buy",ru:"покупать",uz:"sotib olmoq"},
+    {en:"Sell",ru:"продавать",uz:"sotmoq"},
+    {en:"Price",ru:"цена",uz:"narx"},
+    {en:"Cheap",ru:"дешёвый",uz:"arzon"},
+    {en:"Expensive",ru:"дорогой",uz:"qimmat"},
+    {en:"Cash",ru:"наличные",uz:"naqd pul"},
+    {en:"Card",ru:"карта",uz:"karta"},
+    {en:"Receipt",ru:"чек",uz:"chek"},
+    {en:"Discount",ru:"скидка",uz:"chegirma"},
+    {en:"Fitting room",ru:"примерочная",uz:"kabina"},
+    {en:"Size",ru:"размер",uz:"o‘lcham"},
+    {en:"Color",ru:"цвет",uz:"rang"},
+    {en:"Cashier",ru:"кассир",uz:"kassir"},
+    {en:"Customer",ru:"клиент",uz:"mijoz"},
+    {en:"Queue",ru:"очередь",uz:"navbat"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 18: Чувства и состояния", words:[
-    {en:"Happy",ru:"счастливый"},{en:"Sad",ru:"грустный"},{en:"Angry",ru:"сердитый"},{en:"Tired",ru:"уставший"},
-    {en:"Bored",ru:"скучающий"},{en:"Excited",ru:"взволнованный"},{en:"Surprised",ru:"удивлённый"},
-    {en:"Scared",ru:"испуганный"},{en:"Nervous",ru:"нервный"},{en:"Hungry",ru:"голодный"},{en:"Thirsty",ru:"хочущий пить"}
+    {en:"Happy",ru:"счастливый",uz:"xursand"},
+    {en:"Sad",ru:"грустный",uz:"xafa"},
+    {en:"Angry",ru:"сердитый",uz:"jahli chiqqan"},
+    {en:"Tired",ru:"уставший",uz:"charchagan"},
+    {en:"Bored",ru:"скучающий",uz:"zerikkan"},
+    {en:"Excited",ru:"взволнованный",uz:"hayajonlangan"},
+    {en:"Surprised",ru:"удивлённый",uz:"hayron"},
+    {en:"Scared",ru:"испуганный",uz:"qo‘rqqan"},
+    {en:"Nervous",ru:"нервный",uz:"asabiy"},
+    {en:"Hungry",ru:"голодный",uz:"och"},
+    {en:"Thirsty",ru:"хочущий пить",uz:"chanqagan"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 19: Части тела", words:[
-    {en:"Head",ru:"голова"},{en:"Face",ru:"лицо"},{en:"Hair",ru:"волосы"},{en:"Eye",ru:"глаз"},
-    {en:"Ear",ru:"ухо"},{en:"Nose",ru:"нос"},{en:"Mouth",ru:"рот"},{en:"Tooth",ru:"зуб"},
-    {en:"Hand",ru:"рука"},{en:"Arm",ru:"предплечье"},{en:"Finger",ru:"палец"},
-    {en:"Leg",ru:"нога"},{en:"Foot",ru:"стопа"},{en:"Knee",ru:"колено"},{en:"Back",ru:"спина"},
-    {en:"Shoulder",ru:"плечо"},{en:"Stomach",ru:"живот"}
+    {en:"Head",ru:"голова",uz:"bosh"},
+    {en:"Face",ru:"лицо",uz:"yuz"},
+    {en:"Hair",ru:"волосы",uz:"soch"},
+    {en:"Eye",ru:"глаз",uz:"ko‘z"},
+    {en:"Ear",ru:"ухо",uz:"quloq"},
+    {en:"Nose",ru:"нос",uz:"burun"},
+    {en:"Mouth",ru:"рот",uz:"og‘iz"},
+    {en:"Tooth",ru:"зуб",uz:"tish"},
+    {en:"Hand",ru:"рука",uz:"qo‘l"},
+    {en:"Arm",ru:"предплечье",uz:"bilak"},
+    {en:"Finger",ru:"палец",uz:"barmoq"},
+    {en:"Leg",ru:"нога",uz:"oyoq"},
+    {en:"Foot",ru:"стопа",uz:"oyoq panjasi"},
+    {en:"Knee",ru:"колено",uz:"tizza"},
+    {en:"Back",ru:"спина",uz:"orqa"},
+    {en:"Shoulder",ru:"плечо",uz:"yelka"},
+    {en:"Stomach",ru:"живот",uz:"qorin"}
   ], completed:false, lastPercent:0 },
 
   { title:"Урок 20: Повседневные фразы", words:[
-    {en:"Where is ...?",ru:"где находится"},
-    {en:"How much is it?",ru:"сколько это стоит"},
-    {en:"I don't understand",ru:"я не понимаю"},
-    {en:"Please speak slowly",ru:"пожалуйста говорите медленно"},
-    {en:"Could you repeat?",ru:"не могли бы вы повторить"},
-    {en:"Can you help me?",ru:"вы можете мне помочь"},
-    {en:"I'm sorry",ru:"мне жаль"},
-    {en:"Thank you",ru:"спасибо"},
-    {en:"Excuse me",ru:"извините"},
-    {en:"See you later",ru:"увидимся позже"},
-    {en:"What time is it?",ru:"который час"},
-    {en:"I need ...",ru:"мне нужно"},
-    {en:"I want ...",ru:"я хочу"}
+    {en:"Where is ...?",ru:"где находится",uz:"... qayerda?"},
+    {en:"How much is it?",ru:"сколько это стоит",uz:"bu qancha turadi?"},
+    {en:"I don't understand",ru:"я не понимаю",uz:"men tushunmayman"},
+    {en:"Please speak slowly",ru:"пожалуйста говорите медленно",uz:"iltimos, sekinroq gapiring"},
+    {en:"Could you repeat?",ru:"не могли бы вы повторить",uz:"qaytadan ayta olasizmi?"},
+    {en:"Can you help me?",ru:"вы можете мне помочь",uz:"menga yordam bera olasizmi?"},
+    {en:"I'm sorry",ru:"мне жаль",uz:"uzr"},
+    {en:"Thank you",ru:"спасибо",uz:"rahmat"},
+    {en:"Excuse me",ru:"извините",uz:"kechirasiz"},
+    {en:"See you later",ru:"увидимся позже",uz:"keyinroq ko‘rishamiz"},
+    {en:"What time is it?",ru:"который час",uz:"soat nechchi?"},
+    {en:"I need ...",ru:"мне нужно",uz:"menga ... kerak"},
+    {en:"I want ...",ru:"я хочу",uz:"men ... xohlayman"}
   ], completed:false, lastPercent:0 },
 ];
 
@@ -289,7 +492,7 @@ const backToMain1 = document.getElementById("backToMain1");
 const backToMain2 = document.getElementById("backToMain2");
 const againBtn = document.getElementById("againBtn");
 
-const testWord = document.getElementById("testWord");
+const testPrompt = document.getElementById("testPrompt");
 const testForm = document.getElementById("testForm");
 const testInput = document.getElementById("testInput");
 const testFeedback = document.getElementById("testFeedback");
@@ -308,22 +511,26 @@ let testIndex = 0, correct = 0, wrong = 0;
 
 // ====== Сохранение / загрузка ======
 function saveProgress(){
-  localStorage.setItem("a1_lessons_progress", JSON.stringify(lessons));
+  localStorage.setItem("a1_lessons_progress", JSON.stringify(lessons.map(l=>({
+    completed:l.completed, lastPercent:l.lastPercent
+  }))));
 }
 function loadProgress(){
   const saved = localStorage.getItem("a1_lessons_progress");
   if(!saved) return;
   try{
     const parsed = JSON.parse(saved);
-    // если структура совпадает по количеству, примем сохранённое
     if (Array.isArray(parsed) && parsed.length === lessons.length){
-      lessons = parsed;
+      parsed.forEach((p,i)=>{
+        lessons[i].completed = !!p.completed;
+        lessons[i].lastPercent = Number(p.lastPercent||0);
+      });
     }
   }catch{}
 }
 loadProgress();
 
-// ====== Нормализация (игнор пунктуации) ======
+// ====== Нормализация ======
 function normalize(str){
   return String(str || "")
     .toLowerCase()
@@ -341,7 +548,6 @@ function showSection(sec){
 function renderLessons(){
   lessonsGrid.innerHTML = "";
   lessons.forEach((l,i)=>{
-    // блокировка: если есть предыдущий и он не completed, то lock
     const locked = (i>0 && !lessons[i-1].completed);
     const card = document.createElement("div");
     card.className = "card" + (locked ? " locked" : "");
@@ -384,7 +590,7 @@ function openLesson(index){
   currentLesson = lessons[index];
   lessonTitle.textContent = currentLesson.title;
   lessonBadge.textContent = `Слов: ${currentLesson.words.length} • Прогресс: ${currentLesson.lastPercent||0}%`;
-  wordList.innerHTML = currentLesson.words.map(w=>`<div class="word">${w.en} — ${w.ru}</div>`).join("");
+  wordList.innerHTML = currentLesson.words.map(w=>`<div class="word">${w.en} — ${w[currentLang]}</div>`).join("");
   showSection(lessonPage);
 }
 
@@ -398,7 +604,7 @@ function startTest(){
 function renderTestWord(){
   const w = currentLesson.words[testIndex];
   testPos.textContent = `${testIndex+1} / ${currentLesson.words.length}`;
-  testWord.innerHTML = `<div id="testWord" class="word"><b>${w.en}</b></div>`;
+  testPrompt.innerHTML = `<div class="word"><b>${w[currentLang]}</b></div>`;
   testInput.value = "";
   testInput.focus();
 }
@@ -406,12 +612,12 @@ function renderTestWord(){
 testForm.addEventListener("submit", (e)=>{
   e.preventDefault();
   const w = currentLesson.words[testIndex];
-  if (normalize(testInput.value) === normalize(w.ru)){
+  if (normalize(testInput.value) === normalize(w.en)){
     testFeedback.textContent = "Верно!";
     testFeedback.className = "feedback correct";
     correct++;
   }else{
-    testFeedback.textContent = `Неверно! Правильно: ${w.ru}`;
+    testFeedback.textContent = `Неверно! Правильно: ${w.en}`;
     testFeedback.className = "feedback wrong";
     wrong++;
   }
@@ -424,7 +630,7 @@ testForm.addEventListener("submit", (e)=>{
       testFeedback.style.display = "none";
       renderTestWord();
     }
-  }, 500);
+  }, 600);
 });
 
 skipBtn.addEventListener("click", ()=>{
@@ -467,6 +673,7 @@ resetBtn.addEventListener("click", ()=>{
 
 // Первичный рендер
 renderLessons();
+setLangUI();
 </script>
 </body>
 </html>
