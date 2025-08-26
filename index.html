@@ -517,7 +517,14 @@ function saveProgress(){
 }
 function loadProgress(){
   const saved = localStorage.getItem("a1_lessons_progress");
-  if(!saved) return;
+  if(!saved){
+    // Если прогресс ещё нет — отмечаем первые 4 урока
+    for(let i=0;i<4;i++){
+      lessons[i].completed = true;
+      lessons[i].lastPercent = 100;
+    }
+    return;
+  }
   try{
     const parsed = JSON.parse(saved);
     if (Array.isArray(parsed) && parsed.length === lessons.length){
@@ -529,6 +536,7 @@ function loadProgress(){
   }catch{}
 }
 loadProgress();
+
 
 // ====== Нормализация ======
 function normalize(str){
